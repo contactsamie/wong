@@ -1,0 +1,1 @@
+﻿Wo$ng.sam.init();

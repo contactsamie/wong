@@ -1,0 +1,5 @@
+C:\Users\dom\Desktop\wong\wong\wong\bin\wong.dll
+C:\Users\dom\Desktop\wong\wong\wong\bin\wong.pdb
+C:\Users\dom\Desktop\wong\wong\wong\obj\Debug\wong.csprojResolveAssemblyReference.cache
+C:\Users\dom\Desktop\wong\wong\wong\obj\Debug\wong.dll
+C:\Users\dom\Desktop\wong\wong\wong\obj\Debug\wong.pdb
