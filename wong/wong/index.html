@@ -4,7 +4,22 @@
     <title></title>
 </head>
 <body>
-    <span data-wo data-wo-enable="function(){}">ldhlkhslkdhlvhl</span>
+    <div sa-module="sam">
+        <div sa-model="memberId=35" sa-method-enable="function(){}">scoped</div>
+        <input sa-model="nodeId" sa-method-enable="function(){}" />
+
+        <div>another module</div>
+        <input sa-module="john" sa-model="nodeId" sa-method-enable="function(){}" />
+
+        <div sa-module="sam" sa-model="memberId=35" sa-method-enable="function(){}">will be executed again</div>
+    </div>
+
+    <div sa-module="sam" sa-model="memberId=35" sa-method-enable="function(){}">inline</div>
+    <input sa-module="sam" sa-model="groupId" sa-method-disable="#ffccee" />
+
+    <div sa-module="doe" sa-model="memberId=35" sa-method-enable="function(){}">another module</div>
+    <input sa-module="doe" sa-model="nodeId" sa-method-enable="function(){}" />
+
     <script src="jquery-1.8.3.min.js"></script>
     <script src="wong.js"></script>
     <script src="wong.sam.js"></script>

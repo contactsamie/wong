@@ -10,17 +10,21 @@
         defaults: {
             color: '#ffeeee',
             operations: [],
-            indicator: "data-wo-",
+            def_indicator: "data-sa-method-",
+            indicator: "sa-method-",
             ver: "1.0.0",
+            scope: {},
+            rootScope: {},
+            moduleName: "default",
             console: {
-                log: function (o) {console&& console.log (o)},
+                log: function (o) { console && console.log(o) },
                 error: function (o) { console && console.error(o) },
                 warn: function (o) { console && console.warn(o) }
             },
             test: function (o, msg, f) {
                 var m = msg || "";
                 var testResult = o ? true : false;
-                var testMsg=testResult ? "Test passed: " + m: "Test failed: " + m ;
+                var testMsg = testResult ? "Test passed: " + m : "Test failed: " + m;
                 testResult ? this.console.warn(testMsg) : this.console.error(testMsg);
                 typeof f === "function" && f(testResult, testMsg);
                 return testResult;
@@ -32,18 +36,30 @@
             this.op(that);
         },
         check: function (a, t) {
-            return $(t).is("[" + this.config.indicator + a + "]") ? true : false;
+            return ($(t).is("[" + this.config.indicator + a + "]") || $(t).is("[" + this.config.def_indicator + a + "]")) ? true : false;
         },
         work: function (that, sw, f) {
-            return this.check(sw, that) && (typeof f === "function") && f({
-                ref: that,
-                root: this.config,
-                console:this.config.console,
-                arg: $(that).attr(this.config.indicator + sw),
-                $: $,
-                test: this.config.test
+            var argP = $(that).attr(this.config.indicator + sw) || $(that).attr(this.config.def_indicator + sw);
+
+            try {
+                this.check(sw, that) &&
+                   (typeof f === "function") &&
+                   f(argP, this.config.scope.model, this.config.rootScope, this.config.test, {
+                       jElement: that,
+                       root: this.config,
+                       console: this.config.console,
+                       arg: argP,
+                       $: $,
+                       test: this.config.test,
+                       scope: this.config.scope,
+                       rootScope: this.config.rootScope,
+                       module: this.config.moduleName
+                   }
+                   );
             }
-                );
+            catch (ex) {
+                console.log("invalid controller compilation");
+            }
         },
         op: function (that) {
             for (var i = 0; i < this.config.operations.length; i++) {
@@ -76,17 +92,65 @@
                     })
                 }
             };
-            services.execute = function () {
-                if (services.execute.executed) {
+            wong.prototype.rootScope = function () { };
+
+            var servBuilder = function (that, pluginName) {
+                if (($(that).attr("data-sa-ran") === "exe") || ($(that).attr("sa-ran") === "exe")) {
                 } else {
-                    services.execute.executed = true;
-                    $("[data-wo]").each(function () {
-                        $(this).Wo$ng({
-                            color: "#c0c0c0",
-                            operations: services.obj
-                        });
+                    //wong.prototype.rootScope[pluginName]["model"]["$look"] = wong.prototype.rootScope[pluginName]["model"]["$look"] || function (n, v) {
+                    //    $(that).css(n, v);
+                    //};
+
+                    $(that).attr("data-sa-ran", "exe");
+                    $(that).attr("sa-ran", "exe");
+                    var model = $(that).attr("data-sa-model") || $(that).attr("sa-model");
+                    if (model) {
+                        var mVal = model.split('=');
+                        wong.prototype.rootScope[pluginName]["model"][mVal[0]] =
+                           wong.prototype.rootScope[pluginName]["model"][mVal[0]] || (function () {
+                               var model = function () {
+                                   return (typeof mVal[1] === "undefined" ? $(that).val() : mVal[1]);
+                               };
+                               model.look = function (n, v) {
+                                   $(that).css(n, v);
+                               };
+                               model.addClass = function (c) {
+                                   $(that).addClass(c);
+                               };
+                               model.removeClass = function (c) {
+                                   $(that).addClass(c);
+                               };
+                               model.remove = function (c) {
+                                   $(that).remove(c);
+                               };
+
+                               return model;
+                           })();
+                    }
+
+                    $(that).Wo$ng({
+                        scope: wong.prototype.rootScope[pluginName],
+                        color: "#c0c0c0",
+                        operations: services.obj,
+                        rootScope: wong.prototype.rootScope,
+                        moduleName: pluginName
                     });
                 }
+            };
+
+            services.execute = function (pluginName) {
+                wong.prototype.rootScope[pluginName] = wong.prototype.rootScope[pluginName] || {
+                    model: function () { }
+                };
+                $("[data-sa-module='" + pluginName + "'],[sa-module='" + pluginName + "']").each(function () {
+                    servBuilder(this, pluginName);
+
+                    if (($(this).attr("data-sa-module") === pluginName) || ($(this).attr("sa-module") === pluginName)) {
+                        $(this).find("*").each(function () {
+                            servBuilder(this, pluginName);
+                        });
+                    }
+                });
             };
 
             return services;
@@ -96,7 +160,7 @@
             if (pluginName) {
                 w.Wo$ng[pluginName] = new wong();
                 w.Wo$ng[pluginName].init = function () {
-                    w.Wo$ng[pluginName].serviceFactory.execute();
+                    w.Wo$ng[pluginName].serviceFactory.execute(pluginName);
                 };
 
                 return w.Wo$ng[pluginName];

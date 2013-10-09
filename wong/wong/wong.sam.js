@@ -1,7 +1,17 @@
 ﻿(function () {
-    Wo$ng && Wo$ng("sam").serviceFactory("enable", function (param) {
-        param.$(param.ref).css("color", param.root.color);
-        param.test(typeof param.arg === "function", "arg must be a function");
-        param.console.log(param.arg);
+    Wo$ng && Wo$ng("sam").serviceFactory("enable", function ($arg, $model, $rootModel, $test, $param) {
+        $param.console.log($param);
+        $param.$($param.jElement).css("color", $param.root.color);
+        $test(typeof $arg === "function", "arg must be a function");
+        $model.memberId.addClass("thisIsWorking");
     });
+
+
+    Wo$ng && Wo$ng("sam").serviceFactory("disable", function ($arg, $model, $rootModel, $test, $param) {
+       
+        $model.memberId.look("background-color", $arg);
+     
+    });
+
+
 })();
