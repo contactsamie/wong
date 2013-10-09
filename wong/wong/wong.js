@@ -14,6 +14,7 @@
             indicator: "sa-method-",
             ver: "1.0.0",
             scope: {},
+            $scope: {},
             rootScope: {},
             moduleName: "default",
             console: {
@@ -33,6 +34,8 @@
 
         init: function (that) {
             this.config = $.extend({}, this.defaults, this.options, this.metadata);
+            this.config.scope[this.config.moduleName] = this.config.$scope;
+
             this.op(that);
         },
         check: function (a, t) {
@@ -44,14 +47,14 @@
             try {
                 this.check(sw, that) &&
                    (typeof f === "function") &&
-                   f(argP, this.config.scope.model, this.config.rootScope, this.config.test, {
+                   f(argP, this.config.rootScope[this.config.moduleName].model, this.config.rootScope, this.config.test,  {
                        jElement: that,
                        root: this.config,
                        console: this.config.console,
                        arg: argP,
                        $: $,
                        test: this.config.test,
-                       scope: this.config.scope,
+                       scope: this.config.rootScope[this.config.moduleName],
                        rootScope: this.config.rootScope,
                        module: this.config.moduleName
                    }
@@ -64,7 +67,7 @@
         op: function (that) {
             for (var i = 0; i < this.config.operations.length; i++) {
                 var ope = this.config.operations[i];
-                this.work(that, ope.arg, ope.method);
+               ( ope.moduleName=== this.config.moduleName)&&  this.work(that, ope.arg, ope.method);
             }
         }
     };
@@ -83,13 +86,17 @@
     } else {
         var wong = function () { };
         wong.prototype.serviceFactory = (function () {
-            var services = function (name, service) {
+            var services = function ( name, service) {
                 if (name && (typeof service === "function")) {
                     services.obj = services.obj || [];
-                    services.obj.push({
-                        method: service,
-                        arg: name
-                    })
+                    services.obj.push(
+
+                        {
+                            method: service,
+                            arg: name,
+                            moduleName: this.moduleName
+                        }
+                    );
                 }
             };
             wong.prototype.rootScope = function () { };
@@ -129,7 +136,7 @@
                     }
 
                     $(that).Wo$ng({
-                        scope: wong.prototype.rootScope[pluginName],
+                        $scope: wong.prototype.rootScope[pluginName],
                         color: "#c0c0c0",
                         operations: services.obj,
                         rootScope: wong.prototype.rootScope,
@@ -146,6 +153,7 @@
                     servBuilder(this, pluginName);
 
                     if (($(this).attr("data-sa-module") === pluginName) || ($(this).attr("sa-module") === pluginName)) {
+                        console.log($(this).find("*"));
                         $(this).find("*").each(function () {
                             servBuilder(this, pluginName);
                         });
@@ -159,6 +167,7 @@
         w.Wo$ng = function (pluginName) {
             if (pluginName) {
                 w.Wo$ng[pluginName] = new wong();
+                w.Wo$ng[pluginName].moduleName = pluginName;
                 w.Wo$ng[pluginName].init = function () {
                     w.Wo$ng[pluginName].serviceFactory.execute(pluginName);
                 };
